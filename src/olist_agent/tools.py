@@ -4,6 +4,19 @@ from olist_agent.db import run_query
 
 ALLOWED_SCHEMAS = ["03_data_warehouse", "02_stg"]
 
+# Facts a column name alone does not reveal. Shown by describe_table.
+COLUMN_NOTES = {
+    ("03_data_warehouse", "fct_order_items", "item_total_amount"): "price + freight_value",
+    ("03_data_warehouse", "fct_orders", "is_late_delivery"): (
+        "true when a delivered order arrived after its estimated delivery date"
+    ),
+    ("02_stg", "stg_customers", "customer_id"): "unique per row; one per order",
+    ("02_stg", "stg_customers", "customer_unique_id"): (
+        "NOT unique in this table; joining on it duplicates rows"
+    ),
+}
+
+
 def list_tables() -> str:
     """List the tables the agent is allowed to query, one per line."""
     _, rows = run_query(
@@ -32,7 +45,11 @@ def describe_table(schema: str, table: str) -> str:
     )
     if not rows:
         return "Table not found. Call list_tables to see the available tables."
-    return "\n".join(f"{name} ({dtype})" for name, dtype in rows)
+    lines = []
+    for name, dtype in rows:
+        note = COLUMN_NOTES.get((schema, table, name))
+        lines.append(f"{name} ({dtype}) - {note}" if note else f"{name} ({dtype})")
+    return "\n".join(lines)
 
 
 MAX_ROWS = 50

@@ -130,7 +130,7 @@ def main() -> None:
 
 def report() -> None:
     """Print one summary line for every saved eval run."""
-    print(f"{'run':<17}{'prompt':<8}{'dataset':>8}{'accuracy':>10}{'tokens':>8}{'seconds':>9}  model")
+    print(f"{'run':<17}{'prompt':<8}{run.get('git_commit', '-'):<9}{'commit':<9}{'dataset':>8}{'accuracy':>10}{'tokens':>8}{'seconds':>9}  model")
     for path in sorted(RUNS_DIR.glob("*.json")):
         run = json.loads(path.read_text())
         outcomes = run["outcomes"]

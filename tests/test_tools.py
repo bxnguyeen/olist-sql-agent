@@ -30,3 +30,8 @@ def test_call_tool_reports_unknown_tool():
 
 def test_call_tool_reports_bad_arguments():
     assert call_tool("run_sql", "not json").startswith("Invalid arguments")
+
+
+def test_describe_table_shows_column_notes():
+    result = describe_table("03_data_warehouse", "fct_order_items")
+    assert "price + freight_value" in result
