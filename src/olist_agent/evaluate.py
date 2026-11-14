@@ -6,6 +6,7 @@ RUNS_DIR = Path("evals/runs")
 import hashlib
 import subprocess
 import sys
+from openai import RateLimitError
 
 import json
 from decimal import Decimal
@@ -97,7 +98,11 @@ def main() -> None:
     print(f"{'case':<32}{'correct':<9}{'calls':>6}{'tokens':>8}{'seconds':>9}")
     outcomes = []
     for case in dataset["cases"]:
-        outcome = evaluate_case(case, prompt_version)
+        try:
+            outcome = evaluate_case(case, prompt_version)
+        except RateLimitError as error:
+            print(f"Stopped: rate limit reached, run not saved. {error}")
+            sys.exit(1)
         outcomes.append(outcome)
         mark = "yes" if outcome["correct"] else "NO"
         print(
@@ -130,7 +135,7 @@ def main() -> None:
 
 def report() -> None:
     """Print one summary line for every saved eval run."""
-    print(f"{'run':<17}{'prompt':<8}{run.get('git_commit', '-'):<9}{'commit':<9}{'dataset':>8}{'accuracy':>10}{'tokens':>8}{'seconds':>9}  model")
+    print(f"{'run':<17}{'prompt':<8}{'commit':<9}{'dataset':>8}{'accuracy':>10}{'tokens':>8}{'seconds':>9}  model")
     for path in sorted(RUNS_DIR.glob("*.json")):
         run = json.loads(path.read_text())
         outcomes = run["outcomes"]
@@ -138,7 +143,8 @@ def report() -> None:
         correct = sum(outcome["correct"] for outcome in outcomes)
         score = f"{correct}/{total}"
         print(
-            f"{run['started_at']:<17}{run.get('prompt_version', '-'):<8}{run['dataset_version']:>8}"
+            f"{run['started_at']:<17}{run.get('prompt_version', '-'):<8}{run.get('git_commit', '-'):<9}"
+            f"{run['dataset_version']:>8}"
             f"{score:>10}{sum(o['total_tokens'] for o in outcomes) / total:>8.0f}"
             f"{sum(o['seconds'] for o in outcomes) / total:>9.1f}  {run['model']}"
         )
