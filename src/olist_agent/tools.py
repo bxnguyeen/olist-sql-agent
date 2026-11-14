@@ -1,4 +1,5 @@
 import psycopg
+import json
 from olist_agent.db import run_query
 
 ALLOWED_SCHEMAS = ["03_data_warehouse", "02_stg"]
@@ -50,3 +51,61 @@ def run_sql(query: str) -> str:
     if not rows:
         lines.append("(0 rows)")
     return "\n".join(lines)
+
+
+TOOL_SPECS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "list_tables",
+            "description": "List the tables available for querying.",
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "describe_table",
+            "description": "Show the columns and data types of one table.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "schema": {"type": "string", "description": "Schema name, e.g. 03_data_warehouse"},
+                    "table": {"type": "string", "description": "Table name, e.g. fct_orders"},
+                },
+                "required": ["schema", "table"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_sql",
+            "description": "Run a read-only PostgreSQL query and return the rows as text.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "A single SELECT statement"},
+                },
+                "required": ["query"],
+            },
+        },
+    },
+]
+
+
+TOOL_FUNCTIONS = {
+    "list_tables": list_tables,
+    "describe_table": describe_table,
+    "run_sql": run_sql,
+}
+
+
+def call_tool(name: str, arguments: str) -> str:
+    """Run the tool the LLM asked for and return its result as text."""
+    if name not in TOOL_FUNCTIONS:
+        return f"Unknown tool: {name}"
+    try:
+        return TOOL_FUNCTIONS[name](**json.loads(arguments or "{}"))
+    except (json.JSONDecodeError, TypeError) as error:
+        return f"Invalid arguments for {name}: {error}"
