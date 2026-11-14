@@ -1,0 +1,38 @@
+{
+  "started_at": "20261114-195348",
+  "model": "openai/gpt-oss-120b",
+  "dataset_version": 1,
+  "accuracy": 1.0,
+  "outcomes": [
+    {
+      "id": "late_orders",
+      "question": "How many orders were delivered late?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 1971,
+      "seconds": 4.48569820902776,
+      "agent_sql": "SELECT COUNT(*) FROM \"03_data_warehouse\".fct_orders WHERE is_late_delivery = true;",
+      "answer": "The Olist database shows **6,534 orders** that were delivered later than the estimated delivery date (i.e., `is_late_delivery = true`)."
+    },
+    {
+      "id": "top_state_item_price_2018",
+      "question": "Which customer state had the highest total item price (excluding freight) for orders purchased in 2018, and what was that total?",
+      "correct": true,
+      "llm_calls": 7,
+      "total_tokens": 5132,
+      "seconds": 16.615538083016872,
+      "agent_sql": "SELECT sc.customer_state, SUM(foi.price) AS total_price\nFROM \"03_data_warehouse\".fct_orders fo\nJOIN \"03_data_warehouse\".fct_order_items foi ON fo.order_id = foi.order_id\nJOIN \"02_stg\".stg_customers sc ON fo.customer_id = sc.customer_id\nWHERE EXTRACT(YEAR FROM fo.purchased_at) = 2018\nGROUP BY sc.customer_state\nORDER BY total_price DESC\nLIMIT 1;",
+      "answer": "The state with the highest total item price (excluding freight) for orders purchased in\u202f2018 is **S\u00e3o\u202fPaulo (SP)**, with a total price of **\u202f2,975,757.23**."
+    },
+    {
+      "id": "orders_purchased_2017",
+      "question": "How many orders were purchased in 2017?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 1803,
+      "seconds": 3.7095052079530433,
+      "agent_sql": "SELECT COUNT(*) AS order_count FROM \"02_stg\".stg_orders WHERE EXTRACT(YEAR FROM purchased_at) = 2017;",
+      "answer": "**Number of orders purchased in 2017:** **45,101**."
+    }
+  ]
+}

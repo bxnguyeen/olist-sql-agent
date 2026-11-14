@@ -1,0 +1,29 @@
+dataset_version: 1
+cases:
+  - id: late_orders
+    question: How many orders were delivered late?
+    gold_sql: |
+      SELECT count(*)
+      FROM "03_data_warehouse".fct_orders
+      WHERE is_late_delivery
+
+  - id: top_state_item_price_2018
+    question: >-
+      Which customer state had the highest total item price (excluding freight)
+      for orders purchased in 2018, and what was that total?
+    gold_sql: |
+      SELECT c.customer_state, sum(oi.price)
+      FROM "03_data_warehouse".fct_order_items oi
+      JOIN "03_data_warehouse".fct_orders o USING (order_id)
+      JOIN "02_stg".stg_customers c USING (customer_id)
+      WHERE o.purchased_at >= '2018-01-01' AND o.purchased_at < '2019-01-01'
+      GROUP BY c.customer_state
+      ORDER BY 2 DESC
+      LIMIT 1
+
+  - id: orders_purchased_2017
+    question: How many orders were purchased in 2017?
+    gold_sql: |
+      SELECT count(*)
+      FROM "03_data_warehouse".fct_orders
+      WHERE purchased_at >= '2017-01-01' AND purchased_at < '2018-01-01' 
