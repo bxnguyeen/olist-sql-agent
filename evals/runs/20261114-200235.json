@@ -1,0 +1,41 @@
+{
+  "started_at": "20261114-200235",
+  "model": "openai/gpt-oss-120b",
+  "prompt_version": "v1",
+  "prompt_sha256": "a59f2067d40f",
+  "git_commit": "e98e292",
+  "dataset_version": 1,
+  "accuracy": 0.6666666666666666,
+  "outcomes": [
+    {
+      "id": "late_orders",
+      "question": "How many orders were delivered late?",
+      "correct": false,
+      "llm_calls": 4,
+      "total_tokens": 1824,
+      "seconds": 14.406254124944098,
+      "agent_sql": "SELECT COUNT(*) AS late_orders FROM \"02_stg\".stg_orders WHERE delivered_at IS NOT NULL AND estimated_delivery_at IS NOT NULL AND delivered_at > estimated_delivery_at;",
+      "answer": "The number of orders that were delivered later than their estimated delivery date is **7,827**."
+    },
+    {
+      "id": "top_state_item_price_2018",
+      "question": "Which customer state had the highest total item price (excluding freight) for orders purchased in 2018, and what was that total?",
+      "correct": true,
+      "llm_calls": 7,
+      "total_tokens": 4868,
+      "seconds": 16.260478249983862,
+      "agent_sql": "SELECT c.customer_state AS state,\n       SUM(oi.price) AS total_price\nFROM \"03_data_warehouse\".fct_order_items oi\nJOIN \"03_data_warehouse\".fct_orders o ON oi.order_id = o.order_id\nJOIN \"02_stg\".stg_customers c ON o.customer_id = c.customer_id\nWHERE EXTRACT(YEAR FROM o.purchased_at) = 2018\nGROUP BY c.customer_state\nORDER BY total_price DESC\nLIMIT 1;",
+      "answer": "**State with the highest total item price (excluding freight) in 2018:** **S\u00e3o\u202fPaulo (SP)**  \n\n**Total item price:** **2,975,757.23** (sum of the\u202f`price`\u202ffield for all order items purchased in 2018)."
+    },
+    {
+      "id": "orders_purchased_2017",
+      "question": "How many orders were purchased in 2017?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 1863,
+      "seconds": 7.315236833062954,
+      "agent_sql": "SELECT COUNT(*) AS orders_2017 FROM \"03_data_warehouse\".fct_orders WHERE EXTRACT(YEAR FROM purchased_at) = 2017;",
+      "answer": "**Number of orders purchased in 2017:** **45,101**."
+    }
+  ]
+}

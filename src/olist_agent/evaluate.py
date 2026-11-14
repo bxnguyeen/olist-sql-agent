@@ -3,12 +3,16 @@ from datetime import datetime
 from pathlib import Path
 RUNS_DIR = Path("evals/runs")
 
+import hashlib
+import subprocess
+import sys
+
 import json
 from decimal import Decimal
 
 import yaml
 
-from olist_agent.agent import AgentResult, ask
+from olist_agent.agent import DEFAULT_PROMPT_VERSION, AgentResult, ask, load_prompt
 from olist_agent.db import run_query
 
 DATASET_PATH = "evals/questions.yaml"
@@ -54,9 +58,9 @@ def last_successful_sql(result: AgentResult) -> str | None:
     return None
 
 
-def evaluate_case(case: dict) -> dict:
+def evaluate_case(case: dict, prompt_version: str) -> dict:
     """Run the agent on one case and compare its last query result with the gold result."""
-    result = ask(case["question"])
+    result = ask(case["question"], prompt_version)
     agent_sql = last_successful_sql(result)
     correct = False
     if agent_sql is not None:
@@ -75,17 +79,25 @@ def evaluate_case(case: dict) -> dict:
     }
 
 
+def git_commit() -> str:
+    """Return the short hash of the current git commit."""
+    output = subprocess.run(
+        ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True
+    )
+    return output.stdout.strip() or "unknown"
+
 
 def main() -> None:
     """Run every case in the dataset and print a score table."""
     started_at = datetime.now().strftime("%Y%m%d-%H%M%S")
+    prompt_version = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_PROMPT_VERSION
     with open(DATASET_PATH) as file:
         dataset = yaml.safe_load(file)
 
     print(f"{'case':<32}{'correct':<9}{'calls':>6}{'tokens':>8}{'seconds':>9}")
     outcomes = []
     for case in dataset["cases"]:
-        outcome = evaluate_case(case)
+        outcome = evaluate_case(case, prompt_version)
         outcomes.append(outcome)
         mark = "yes" if outcome["correct"] else "NO"
         print(
@@ -103,6 +115,9 @@ def main() -> None:
     run = {
         "started_at": started_at,
         "model": os.environ["LLM_MODEL"],
+        "prompt_version": prompt_version,
+        "prompt_sha256": hashlib.sha256(load_prompt(prompt_version).encode()).hexdigest()[:12],
+        "git_commit": git_commit(),
         "dataset_version": dataset["dataset_version"],
         "accuracy": correct / total,
         "outcomes": outcomes,

@@ -1,4 +1,4 @@
-dataset_version: 1
+dataset_version: 2
 cases:
   - id: late_orders
     question: How many orders were delivered late?
@@ -27,3 +27,52 @@ cases:
       SELECT count(*)
       FROM "03_data_warehouse".fct_orders
       WHERE purchased_at >= '2017-01-01' AND purchased_at < '2018-01-01' 
+
+  - id: top_category_item_price
+    question: >-
+      Which English product category name has the highest total item price
+      (excluding freight) across all order items, and what is that total?
+    gold_sql: |
+      SELECT p.product_category_name_english, sum(oi.price)
+      FROM "03_data_warehouse".fct_order_items oi
+      JOIN "03_data_warehouse".dim_products p USING (product_id)
+      GROUP BY 1
+      ORDER BY 2 DESC
+      LIMIT 1
+
+  - id: busiest_month_2017
+    question: Which month of 2017 had the most orders purchased, and how many orders was that?
+    gold_sql: |
+      SELECT count(*)
+      FROM "03_data_warehouse".fct_orders
+      WHERE purchased_at >= '2017-01-01' AND purchased_at < '2018-01-01'
+      GROUP BY date_trunc('month', purchased_at)
+      ORDER BY 1 DESC
+      LIMIT 1
+
+  - id: canceled_orders
+    question: How many orders have the status 'canceled'?
+    gold_sql: |
+      SELECT count(*)
+      FROM "03_data_warehouse".fct_orders
+      WHERE order_status = 'canceled'
+
+  - id: distinct_sellers
+    question: How many distinct sellers appear in the order items?
+    gold_sql: |
+      SELECT count(distinct seller_id)
+      FROM "03_data_warehouse".fct_order_items 
+  
+  - id: repeat_customers
+    question: How many unique customers (customer_unique_id) placed more than one order?
+    gold_sql: |
+      SELECT count(*)
+      FROM "03_data_warehouse".dim_customers
+      WHERE order_count > 1
+
+  - id: freight_2017
+    question: What is the total freight value of all order items purchased in 2017?
+    gold_sql: |
+      SELECT sum(freight_value)
+      FROM "03_data_warehouse".fct_order_items
+      WHERE purchased_at >= '2017-01-01' AND purchased_at < '2018-01-01'

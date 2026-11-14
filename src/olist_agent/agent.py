@@ -1,6 +1,7 @@
 import os
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -9,11 +10,14 @@ from olist_agent.tools import TOOL_SPECS, call_tool
 
 load_dotenv()
 
-SYSTEM_PROMPT = (
-    "You answer questions about the Olist e-commerce database (PostgreSQL) "
-    "by querying it with the provided tools. "
-    "Base your answer only on query results, and include the key numbers."
-)
+PROMPTS_DIR = Path("prompts")
+DEFAULT_PROMPT_VERSION = "v1"
+
+
+def load_prompt(version: str) -> str:
+    """Read one versioned system prompt, e.g. prompts/v1.txt."""
+    return (PROMPTS_DIR / f"{version}.txt").read_text().strip()
+
 MAX_STEPS = 10
 @dataclass
 class ToolCall:
@@ -35,11 +39,11 @@ class AgentResult:
     seconds: float = 0.0
 
 
-def ask(question: str) -> AgentResult:
+def ask(question: str, prompt_version: str = DEFAULT_PROMPT_VERSION) -> AgentResult:
     """Answer a question by letting the LLM call tools until it has an answer."""
     client = OpenAI(base_url=os.environ["LLM_BASE_URL"], api_key=os.environ["LLM_API_KEY"])
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": load_prompt(prompt_version)},
         {"role": "user", "content": question},
     ]
     result = AgentResult(answer="Stopped: step limit reached without an answer.")
