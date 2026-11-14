@@ -127,3 +127,18 @@ def main() -> None:
     run_path.write_text(json.dumps(run, indent=2))
     print(f"saved: {run_path}")
 
+
+def report() -> None:
+    """Print one summary line for every saved eval run."""
+    print(f"{'run':<17}{'prompt':<8}{'dataset':>8}{'accuracy':>10}{'tokens':>8}{'seconds':>9}  model")
+    for path in sorted(RUNS_DIR.glob("*.json")):
+        run = json.loads(path.read_text())
+        outcomes = run["outcomes"]
+        total = len(outcomes)
+        correct = sum(outcome["correct"] for outcome in outcomes)
+        score = f"{correct}/{total}"
+        print(
+            f"{run['started_at']:<17}{run.get('prompt_version', '-'):<8}{run['dataset_version']:>8}"
+            f"{score:>10}{sum(o['total_tokens'] for o in outcomes) / total:>8.0f}"
+            f"{sum(o['seconds'] for o in outcomes) / total:>9.1f}  {run['model']}"
+        )

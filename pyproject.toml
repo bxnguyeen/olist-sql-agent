@@ -19,6 +19,7 @@ dev = ["pytest>=8"]
 [project.scripts]
 olist-ask = "olist_agent.cli:main"
 olist-eval = "olist_agent.evaluate:main"
+olist-report = "olist_agent.evaluate:report"
 
 [tool.setuptools.packages.find]
 where = ["src"]

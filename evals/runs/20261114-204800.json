@@ -1,0 +1,101 @@
+{
+  "started_at": "20261114-204800",
+  "model": "openai/gpt-oss-120b",
+  "prompt_version": "v1",
+  "prompt_sha256": "a59f2067d40f",
+  "git_commit": "3537fc2",
+  "dataset_version": 2,
+  "accuracy": 0.7777777777777778,
+  "outcomes": [
+    {
+      "id": "late_orders",
+      "question": "How many orders were delivered late?",
+      "correct": false,
+      "llm_calls": 4,
+      "total_tokens": 1864,
+      "seconds": 7.808095000102185,
+      "agent_sql": "SELECT COUNT(*) FROM \"02_stg\".stg_orders WHERE delivered_at IS NOT NULL AND estimated_delivery_at IS NOT NULL AND delivered_at > estimated_delivery_at;",
+      "answer": "**Number of orders delivered late:** **7,827**. This count includes orders where the actual delivery timestamp (`delivered_at`) is later than the estimated delivery timestamp (`estimated_delivery_at`)."
+    },
+    {
+      "id": "top_state_item_price_2018",
+      "question": "Which customer state had the highest total item price (excluding freight) for orders purchased in 2018, and what was that total?",
+      "correct": false,
+      "llm_calls": 7,
+      "total_tokens": 5286,
+      "seconds": 33.0508421669947,
+      "agent_sql": "SELECT c.customer_state,\n       SUM(oi.price) AS total_price\nFROM \"03_data_warehouse\".fct_order_items oi\nJOIN \"03_data_warehouse\".fct_orders o ON oi.order_id = o.order_id\nJOIN \"02_stg\".stg_customers c ON o.customer_unique_id = c.customer_unique_id\nWHERE EXTRACT(YEAR FROM o.purchased_at) = 2018\nGROUP BY c.customer_state\nORDER BY total_price DESC\nLIMIT 1;",
+      "answer": "**State with the highest total item price (excluding freight) for 2018 orders**\n\n| Customer state | Total item price (price only) |\n|----------------|------------------------------|\n| **SP** (S\u00e3o\u202fPaulo) | **3,179,756.87** |\n\nThe query summed the `price` column (which represents the product price without the freight charge) for all order items linked to orders whose `purchased_at` date falls in 2018, grouped by the customers\u2019 state. The state **SP** (S\u00e3o\u202fPaulo) had the highest total, amounting to **3,179,756.87**."
+    },
+    {
+      "id": "orders_purchased_2017",
+      "question": "How many orders were purchased in 2017?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 1819,
+      "seconds": 11.873429790954106,
+      "agent_sql": "SELECT COUNT(*) AS orders_2017 FROM \"02_stg\".stg_orders WHERE EXTRACT(YEAR FROM purchased_at) = 2017;",
+      "answer": "**Number of orders purchased in\u202f2017:** **45,101**."
+    },
+    {
+      "id": "top_category_item_price",
+      "question": "Which English product category name has the highest total item price (excluding freight) across all order items, and what is that total?",
+      "correct": true,
+      "llm_calls": 7,
+      "total_tokens": 4840,
+      "seconds": 50.12846495897975,
+      "agent_sql": "SELECT dp.product_category_name_english, SUM(foi.price) AS total_price\nFROM \"03_data_warehouse\".fct_order_items foi\nJOIN \"03_data_warehouse\".dim_products dp ON foi.product_id = dp.product_id\nGROUP BY dp.product_category_name_english\nORDER BY total_price DESC\nLIMIT 1;",
+      "answer": "The English product category with the highest total item price (excluding freight) is **\u201chealth_beauty\u201d**, with a total price of **1,258,681.34**."
+    },
+    {
+      "id": "busiest_month_2017",
+      "question": "Which month of 2017 had the most orders purchased, and how many orders was that?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 2035,
+      "seconds": 5.20190454099793,
+      "agent_sql": "SELECT DATE_TRUNC('month', purchased_at) AS month, COUNT(*) AS order_count\nFROM \"03_data_warehouse\".fct_orders\nWHERE EXTRACT(year FROM purchased_at) = 2017\nGROUP BY month\nORDER BY order_count DESC\nLIMIT 1;",
+      "answer": "The month with the highest number of purchases in\u202f2017 was **November**, with **7,544 orders** placed."
+    },
+    {
+      "id": "canceled_orders",
+      "question": "How many orders have the status 'canceled'?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 1799,
+      "seconds": 8.021847083000466,
+      "agent_sql": "SELECT COUNT(*) FROM \"02_stg\".stg_orders WHERE order_status = 'canceled';",
+      "answer": "The **Olist** database shows that there are **625 orders** with the status **'canceled'**."
+    },
+    {
+      "id": "distinct_sellers",
+      "question": "How many distinct sellers appear in the order items?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 1733,
+      "seconds": 5.599340540939011,
+      "agent_sql": "SELECT COUNT(DISTINCT seller_id) AS distinct_sellers FROM \"02_stg\".stg_order_items;",
+      "answer": "The **order items** table contains **3,095 distinct sellers**."
+    },
+    {
+      "id": "repeat_customers",
+      "question": "How many unique customers (customer_unique_id) placed more than one order?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 1714,
+      "seconds": 5.419476457987912,
+      "agent_sql": "SELECT COUNT(*) FROM \"03_data_warehouse\".dim_customers WHERE order_count > 1;",
+      "answer": "There are **2,997** unique customers (`customer_unique_id`) who placed more than one order."
+    },
+    {
+      "id": "freight_2017",
+      "question": "What is the total freight value of all order items purchased in 2017?",
+      "correct": true,
+      "llm_calls": 5,
+      "total_tokens": 2682,
+      "seconds": 23.699451750027947,
+      "agent_sql": "SELECT SUM(oi.freight_value) AS total_freight_2017\nFROM \"02_stg\".stg_order_items oi\nJOIN \"02_stg\".stg_orders o ON oi.order_id = o.order_id\nWHERE EXTRACT(YEAR FROM o.purchased_at) = 2017;",
+      "answer": "The total freight value for all order items purchased in\u202f2017 is **986,865.45**."
+    }
+  ]
+}
