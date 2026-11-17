@@ -1,5 +1,7 @@
-from olist_agent.tools import call_tool, describe_table, list_tables
 import pytest
+
+from olist_agent.tools import call_tool, describe_table, list_tables
+
 pytestmark = pytest.mark.db
 
 

@@ -1,5 +1,7 @@
-from olist_agent.tools import MAX_ROWS, run_sql
 import pytest
+
+from olist_agent.tools import MAX_ROWS, run_sql
+
 pytestmark = pytest.mark.db
 
 

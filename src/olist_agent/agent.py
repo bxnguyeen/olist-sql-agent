@@ -18,7 +18,10 @@ def load_prompt(version: str) -> str:
     """Read one versioned system prompt, e.g. prompts/v1.txt."""
     return (PROMPTS_DIR / f"{version}.txt").read_text().strip()
 
+
 MAX_STEPS = 10
+
+
 @dataclass
 class ToolCall:
     """One tool call made by the LLM, with the result it got back."""
@@ -41,7 +44,11 @@ class AgentResult:
 
 def ask(question: str, prompt_version: str = DEFAULT_PROMPT_VERSION) -> AgentResult:
     """Answer a question by letting the LLM call tools until it has an answer."""
-    client = OpenAI(base_url=os.environ["LLM_BASE_URL"], api_key=os.environ["LLM_API_KEY"], max_retries=5)
+    client = OpenAI(
+        base_url=os.environ["LLM_BASE_URL"],
+        api_key=os.environ["LLM_API_KEY"],
+        max_retries=5,
+    )
     messages = [
         {"role": "system", "content": load_prompt(prompt_version)},
         {"role": "user", "content": question},

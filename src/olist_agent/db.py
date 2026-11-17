@@ -5,8 +5,9 @@ load_dotenv()
 
 STATEMENT_TIMEOUT_MS = 10_000
 
+
 def run_query(
-        sql: str, params: list | None = None, max_rows: int | None = None
+    sql: str, params: list | None = None, max_rows: int | None = None
 ) -> tuple[list[str], list[tuple]]:
     """Run a read-only SQL query, return (column, rows)."""
     with psycopg.connect(options=f"-c statement_timeout={STATEMENT_TIMEOUT_MS}") as conn:

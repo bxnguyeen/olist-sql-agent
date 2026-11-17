@@ -41,15 +41,20 @@ def use_fake_llm(monkeypatch, responses):
 
 def test_ask_runs_tool_then_answers(monkeypatch):
     sql_call = fake_tool_call("run_sql", '{"query": "SELECT count(*) FROM t"}')
-    use_fake_llm(monkeypatch, [
-        fake_response(tool_calls=[sql_call]),
-        fake_response(content="There are 42 orders."),
-    ])
+    use_fake_llm(
+        monkeypatch,
+        [
+            fake_response(tool_calls=[sql_call]),
+            fake_response(content="There are 42 orders."),
+        ],
+    )
     result = ask("How many orders?")
     assert result.answer == "There are 42 orders."
     assert result.llm_calls == 2
     assert result.total_tokens == 20
-    assert result.tool_calls == [ToolCall("run_sql", '{"query": "SELECT count(*) FROM t"}', "count\n42")]
+    assert result.tool_calls == [
+        ToolCall("run_sql", '{"query": "SELECT count(*) FROM t"}', "count\n42")
+    ]
 
 
 def test_ask_stops_at_step_limit(monkeypatch):
@@ -61,10 +66,17 @@ def test_ask_stops_at_step_limit(monkeypatch):
 
 
 def test_last_successful_sql_skips_failed_queries():
-    result = AgentResult(answer="", tool_calls=[
-        ToolCall("run_sql", '{"query": "SELECT 1"}', "?column?\n1"),
-        ToolCall("run_sql", '{"query": "SELECT oops"}', "SQL error: column does not exist"),
-    ])
+    result = AgentResult(
+        answer="",
+        tool_calls=[
+            ToolCall("run_sql", '{"query": "SELECT 1"}', "?column?\n1"),
+            ToolCall(
+                "run_sql",
+                '{"query": "SELECT oops"}',
+                "SQL error: column does not exist",
+            ),
+        ],
+    )
     assert last_successful_sql(result) == "SELECT 1"
 
 

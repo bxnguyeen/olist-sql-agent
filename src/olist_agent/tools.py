@@ -1,12 +1,18 @@
-import psycopg
 import json
+
+import psycopg
+
 from olist_agent.db import run_query
 
 ALLOWED_SCHEMAS = ["03_data_warehouse", "02_stg"]
 
 # Facts a column name alone does not reveal. Shown by describe_table.
 COLUMN_NOTES = {
-    ("03_data_warehouse", "fct_order_items", "item_total_amount"): "price + freight_value",
+    (
+        "03_data_warehouse",
+        "fct_order_items",
+        "item_total_amount",
+    ): "price + freight_value",
     ("03_data_warehouse", "fct_orders", "is_late_delivery"): (
         "true when a delivered order arrived after its estimated delivery date"
     ),
@@ -54,6 +60,7 @@ def describe_table(schema: str, table: str) -> str:
 
 MAX_ROWS = 50
 
+
 def run_sql(query: str) -> str:
     """Run a read-only SQL query and return the result (or the error) as text."""
     try:
@@ -87,8 +94,14 @@ TOOL_SPECS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "schema": {"type": "string", "description": "Schema name, e.g. 03_data_warehouse"},
-                    "table": {"type": "string", "description": "Table name, e.g. fct_orders"},
+                    "schema": {
+                        "type": "string",
+                        "description": "Schema name, e.g. 03_data_warehouse",
+                    },
+                    "table": {
+                        "type": "string",
+                        "description": "Table name, e.g. fct_orders",
+                    },
                 },
                 "required": ["schema", "table"],
             },
@@ -102,7 +115,10 @@ TOOL_SPECS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "query": {"type": "string", "description": "A single SELECT statement"},
+                    "query": {
+                        "type": "string",
+                        "description": "A single SELECT statement",
+                    },
                 },
                 "required": ["query"],
             },

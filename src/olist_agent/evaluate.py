@@ -1,24 +1,21 @@
-import os
-from datetime import datetime
-from pathlib import Path
-RUNS_DIR = Path("evals/runs")
-
 import hashlib
+import json
+import os
 import subprocess
 import sys
-from openai import RateLimitError
-
-import json
+from datetime import datetime
 from decimal import Decimal
+from pathlib import Path
 
 import yaml
+from openai import RateLimitError
 
 from olist_agent.agent import DEFAULT_PROMPT_VERSION, AgentResult, ask, load_prompt
 from olist_agent.db import run_query
 
 DATASET_PATH = "evals/questions.yaml"
 
-from decimal import Decimal
+RUNS_DIR = Path("evals/runs")
 
 
 def normalize(value):
@@ -54,7 +51,9 @@ def results_match(gold_rows: list[tuple], agent_rows: list[tuple]) -> bool:
 def last_successful_sql(result: AgentResult) -> str | None:
     """Return the last run_sql query that ran without an error, or None."""
     for call in reversed(result.tool_calls):
-        if call.name == "run_sql" and not call.result.startswith(("SQL error:", "Invalid arguments")):
+        if call.name == "run_sql" and not call.result.startswith(
+            ("SQL error:", "Invalid arguments")
+        ):
             return json.loads(call.arguments)["query"]
     return None
 
@@ -82,9 +81,7 @@ def evaluate_case(case: dict, prompt_version: str) -> dict:
 
 def git_commit() -> str:
     """Return the short hash of the current git commit."""
-    output = subprocess.run(
-        ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True
-    )
+    output = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True)
     return output.stdout.strip() or "unknown"
 
 
@@ -135,7 +132,10 @@ def main() -> None:
 
 def report() -> None:
     """Print one summary line for every saved eval run."""
-    print(f"{'run':<17}{'prompt':<8}{'commit':<9}{'dataset':>8}{'accuracy':>10}{'tokens':>8}{'seconds':>9}  model")
+    print(
+        f"{'run':<17}{'prompt':<8}{'commit':<9}{'dataset':>8}"
+        f"{'accuracy':>10}{'tokens':>8}{'seconds':>9}  model"
+    )
     for path in sorted(RUNS_DIR.glob("*.json")):
         run = json.loads(path.read_text())
         outcomes = run["outcomes"]
@@ -143,7 +143,8 @@ def report() -> None:
         correct = sum(outcome["correct"] for outcome in outcomes)
         score = f"{correct}/{total}"
         print(
-            f"{run['started_at']:<17}{run.get('prompt_version', '-'):<8}{run.get('git_commit', '-'):<9}"
+            f"{run['started_at']:<17}{run.get('prompt_version', '-'):<8}"
+            f"{run.get('git_commit', '-'):<9}"
             f"{run['dataset_version']:>8}"
             f"{score:>10}{sum(o['total_tokens'] for o in outcomes) / total:>8.0f}"
             f"{sum(o['seconds'] for o in outcomes) / total:>9.1f}  {run['model']}"
