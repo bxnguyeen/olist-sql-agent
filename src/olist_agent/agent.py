@@ -11,7 +11,7 @@ from olist_agent.tools import TOOL_SPECS, call_tool
 load_dotenv()
 
 PROMPTS_DIR = Path("prompts")
-DEFAULT_PROMPT_VERSION = "v1"
+DEFAULT_PROMPT_VERSION = "v2"
 
 
 def load_prompt(version: str) -> str:

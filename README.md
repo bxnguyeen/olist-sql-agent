@@ -10,10 +10,10 @@ version that produced it.
 ```
 $ olist-ask "How many orders have the status 'canceled'?"
 [tool] list_tables {}
-[tool] describe_table {"schema":"02_stg","table":"stg_orders"}
-[tool] run_sql {"query":"SELECT COUNT(*) AS canceled_orders FROM \"02_stg\".stg_orders WHERE order_status = 'canceled';"}
-The database shows **625** orders with the status **'canceled'**.
-(4 LLM calls, 1796 tokens, 6.5s)
+[tool] describe_table {"schema":"03_data_warehouse","table":"fct_orders"}
+[tool] run_sql {"query":"SELECT COUNT(*) AS canceled_orders FROM \"03_data_warehouse\".fct_orders WHERE order_status = 'canceled';"}
+**Number of orders with status “canceled”:** **625**.
+(4 LLM calls, 2186 tokens, 3.9s)
 ```
 
 ## Architecture
@@ -151,7 +151,7 @@ code and prompt that produced them.
 |---|---|---|---|---|
 | gpt-oss-120b | v1 | 19/20 | 2,534 | 14.5 |
 | gpt-oss-120b | v2 | 20/20 | 2,717 | 13.9 |
-| gpt-oss-20b | v2 | TODO | TODO | TODO |
+| gpt-oss-20b | v2 | 18/20 | 3,446 | 19.3 |
 
 Earlier runs on a 9-question dataset (3 runs per prompt):
 
@@ -180,6 +180,9 @@ the setup as a whole, not only the model.
   that excluded freight. Column notes now state what such columns contain.
 - **Arithmetic outside SQL.** In one run the agent queried the correct counts and then
   divided them itself, answering 6.78% instead of 6.77%.
+- **The smaller model was not cheaper.** gpt-oss-20b needed more steps per question,
+  so it used about 27% more tokens and 39% more time than gpt-oss-120b, and scored
+  lower. On one question it ran no successful query and returned an empty answer.
 
 ### Limitations
 
@@ -187,7 +190,11 @@ the setup as a whole, not only the model.
   differences; the results above show trends, not significant gains.
 - Column notes and prompt v2 were written after looking at failures on this dataset,
   so scores on it are optimistic. New questions are the fair test.
-- The SQL is graded, not the written answer. An agent that runs the right query and
+- The grader uses the agent's last successful query, not its written answer. This fails
+  in both directions: gpt-oss-20b found the right count (2,453), then ran one more query
+  for context and was marked wrong; prompt v1 once ran the right counts, divided them
+  itself and misreported the percentage. Grading the written answer as well, for example
+  with an LLM judge, would catch both, at the cost of a less deterministic grader.
   then misreports it is still counted as correct (the arithmetic case above was caught
   only because its last query returned counts, not the percentage).
 - Gold queries return only values with one unambiguous representation; questions are
