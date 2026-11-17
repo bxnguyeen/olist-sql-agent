@@ -1,0 +1,211 @@
+{
+  "started_at": "20261117-211028",
+  "model": "openai/gpt-oss-20b",
+  "prompt_version": "v2",
+  "prompt_sha256": "d9a30a38bed0",
+  "git_commit": "ef591d6",
+  "dataset_version": 3,
+  "accuracy": 0.9,
+  "outcomes": [
+    {
+      "id": "late_orders",
+      "question": "How many orders were delivered late?",
+      "correct": true,
+      "llm_calls": 5,
+      "total_tokens": 2773,
+      "seconds": 4.630015791975893,
+      "agent_sql": "SELECT COUNT(*) AS late_orders FROM \"03_data_warehouse\".fct_orders WHERE is_late_delivery = TRUE;",
+      "answer": "**Orders delivered late:** 6,534\n"
+    },
+    {
+      "id": "top_state_item_price_2018",
+      "question": "Which customer state had the highest total item price (excluding freight) for orders purchased in 2018, and what was that total?",
+      "correct": false,
+      "llm_calls": 6,
+      "total_tokens": 3659,
+      "seconds": 6.590400040964596,
+      "agent_sql": null,
+      "answer": ""
+    },
+    {
+      "id": "orders_purchased_2017",
+      "question": "How many orders were purchased in 2017?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 2277,
+      "seconds": 3.099630667013116,
+      "agent_sql": "SELECT COUNT(DISTINCT order_id) AS orders_2017 FROM \"03_data_warehouse\".fct_orders WHERE EXTRACT(YEAR FROM purchased_at) = 2017;",
+      "answer": "There were **45,101** orders placed in 2017."
+    },
+    {
+      "id": "top_category_item_price",
+      "question": "Which English product category name has the highest total item price (excluding freight) across all order items, and what is that total?",
+      "correct": true,
+      "llm_calls": 6,
+      "total_tokens": 4528,
+      "seconds": 23.8905321250204,
+      "agent_sql": "SELECT p.product_category_name_english AS category, SUM(f.price) AS total_price\nFROM \"03_data_warehouse\".fct_order_items f\nJOIN \"03_data_warehouse\".dim_products p\n  ON f.product_id = p.product_id\nGROUP BY p.product_category_name_english\nORDER BY total_price DESC\nLIMIT 1;",
+      "answer": "The English product category with the highest total item price (excluding freight) is **\u201chealth_beauty\u201d**, with a cumulative price of **1\u202f258\u202f681.34**."
+    },
+    {
+      "id": "busiest_month_2017",
+      "question": "Which month of 2017 had the most orders purchased, and how many orders was that?",
+      "correct": true,
+      "llm_calls": 5,
+      "total_tokens": 2965,
+      "seconds": 19.258304874994792,
+      "agent_sql": "SELECT TO_CHAR(date_trunc('month', purchased_at), 'YYYY-MM') AS month, COUNT(*) AS orders\nFROM \"03_data_warehouse\".fct_orders\nWHERE EXTRACT(YEAR FROM purchased_at) = 2017\nGROUP BY month\nORDER BY orders DESC\nLIMIT 1;",
+      "answer": "**November 2017** had the highest number of orders, with **7,544 orders** placed that month."
+    },
+    {
+      "id": "canceled_orders",
+      "question": "How many orders have the status 'canceled'?",
+      "correct": true,
+      "llm_calls": 6,
+      "total_tokens": 3301,
+      "seconds": 18.96372458303813,
+      "agent_sql": "SELECT COUNT(*) AS canceled_orders FROM \"03_data_warehouse\".fct_orders WHERE order_status = 'canceled';",
+      "answer": "There are **625** orders with the status **'canceled'**."
+    },
+    {
+      "id": "distinct_sellers",
+      "question": "How many distinct sellers appear in the order items?",
+      "correct": true,
+      "llm_calls": 5,
+      "total_tokens": 2685,
+      "seconds": 16.026830375078134,
+      "agent_sql": "SELECT COUNT(DISTINCT seller_id) AS distinct_sellers FROM \"03_data_warehouse\".fct_order_items;",
+      "answer": "There are **3,095** distinct sellers appearing in the order\u2011items data."
+    },
+    {
+      "id": "repeat_customers",
+      "question": "How many unique customers (customer_unique_id) placed more than one order?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 2155,
+      "seconds": 11.528749709017575,
+      "agent_sql": "SELECT COUNT(*) AS customer_count FROM \"03_data_warehouse\".dim_customers WHERE order_count > 1;",
+      "answer": "**Answer:**  \nThere are **2,997** unique customers (`customer_unique_id`) who placed more than one order.  \n\nThe count was derived from the `dim_customers` table in the data warehouse, filtering rows where `order_count > 1`."
+    },
+    {
+      "id": "freight_2017",
+      "question": "What is the total freight value of all order items purchased in 2017?",
+      "correct": true,
+      "llm_calls": 5,
+      "total_tokens": 2814,
+      "seconds": 20.006056499900296,
+      "agent_sql": "SELECT SUM(freight_value) AS total_freight FROM \"03_data_warehouse\".fct_order_items WHERE EXTRACT(YEAR FROM purchased_at) = 2017;",
+      "answer": "The total freight value for all order items purchased in 2017 is **$986,865.45**."
+    },
+    {
+      "id": "delivered_orders",
+      "question": "How many orders have the status 'delivered'?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 2209,
+      "seconds": 13.609669958008453,
+      "agent_sql": "SELECT COUNT(*) AS delivered_orders FROM \"03_data_warehouse\".fct_orders WHERE order_status = 'delivered';",
+      "answer": "There are **96,478** orders in the warehouse with the status **'delivered'**."
+    },
+    {
+      "id": "distinct_products_sold",
+      "question": "How many distinct products appear in the order items?",
+      "correct": true,
+      "llm_calls": 4,
+      "total_tokens": 2148,
+      "seconds": 13.05923450004775,
+      "agent_sql": "SELECT COUNT(DISTINCT product_id) AS distinct_products FROM \"03_data_warehouse\".fct_order_items;",
+      "answer": "There are **32,951 distinct products** represented in the order items table."
+    },
+    {
+      "id": "max_item_price",
+      "question": "What is the highest price of a single order item (excluding freight)?",
+      "correct": true,
+      "llm_calls": 6,
+      "total_tokens": 3334,
+      "seconds": 22.861178124905564,
+      "agent_sql": "SELECT MAX(price) AS highest_price FROM \"03_data_warehouse\".fct_order_items;",
+      "answer": "The highest price for a single order item (excluding freight) is **$6,735.00**."
+    },
+    {
+      "id": "avg_item_price",
+      "question": "What is the average price of an order item (excluding freight)?",
+      "correct": true,
+      "llm_calls": 5,
+      "total_tokens": 2782,
+      "seconds": 12.136571500101127,
+      "agent_sql": "SELECT ROUND(AVG(price)::numeric, 2) AS avg_item_price FROM \"03_data_warehouse\".fct_order_items;",
+      "answer": "The average unit price of an order item (excluding freight) is **US\u202f$120.65**."
+    },
+    {
+      "id": "english_categories",
+      "question": "How many distinct English product category names are there in the products table?",
+      "correct": true,
+      "llm_calls": 5,
+      "total_tokens": 2691,
+      "seconds": 17.54205212497618,
+      "agent_sql": "SELECT COUNT(DISTINCT product_category_name_english) AS distinct_english_categories FROM \"03_data_warehouse\".dim_products;",
+      "answer": "There are **71** distinct English product category names in the `dim_products` table."
+    },
+    {
+      "id": "top_seller_item_price",
+      "question": "Which seller_id has the highest total item price (excluding freight), and what is that total?",
+      "correct": true,
+      "llm_calls": 6,
+      "total_tokens": 3491,
+      "seconds": 20.388065584003925,
+      "agent_sql": "SELECT seller_id, SUM(price) AS total_price FROM \"03_data_warehouse\".fct_order_items GROUP BY seller_id ORDER BY total_price DESC LIMIT 1;",
+      "answer": "**Seller with the highest total item price (excluding freight):**\n\n| seller_id | total item price |\n|-----------|------------------|\n| 4869f7a5dfa277a7dca6462dcf3b52b2 | **$229,472.63** |\n\nThis total is calculated by summing the `price` column in the `fct_order_items` fact table, which represents the price of each order item without freight charges."
+    },
+    {
+      "id": "orders_rj",
+      "question": "How many orders were placed by customers in the state RJ?",
+      "correct": true,
+      "llm_calls": 10,
+      "total_tokens": 10101,
+      "seconds": 69.02751262497623,
+      "agent_sql": "SELECT COUNT(*) AS orders_in_rj FROM \"03_data_warehouse\".\"fct_orders\" fo JOIN \"02_stg\".\"stg_customers\" sc ON fo.customer_id = sc.customer_id WHERE sc.customer_state = 'RJ';",
+      "answer": "**Answer**\n\nThere were **12,852 orders** placed by customers located in the state of Rio\u202fde\u202fJaneiro (RJ).\n\n**How we got this number**\n\n| Step | SQL fragment | Result |\n|------|--------------|--------|\n| 1 | `SELECT COUNT(*) AS orders_in_rj FROM \"03_data_warehouse\".\"fct_orders\" fo` | 1 row per order |\n| 2 | `JOIN \"02_stg\".\"stg_customers\" sc ON fo.customer_id = sc.customer_id` | One\u2011to\u2011one join \u2013 each order is linked to a single customer record |\n| 3 | `WHERE sc.customer_state = 'RJ'` | Filters only those customers whose state field equals \u201cRJ\u201d |\n| 4 | `SELECT COUNT(*)` | **12,852** |\n\nThe join uses `customer_id` (unique in both `fct_orders` and `stg_customers`), ensuring no duplicate orders are counted. Thus the total number of orders from Rio\u202fde\u202fJaneiro customers is 12,852."
+    },
+    {
+      "id": "freight_2018_q1",
+      "question": "What is the total freight value of order items purchased in the first quarter of 2018 (January to March)?",
+      "correct": true,
+      "llm_calls": 6,
+      "total_tokens": 3569,
+      "seconds": 24.757106375065632,
+      "agent_sql": "SELECT SUM(freight_value) AS total_freight_value FROM \"03_data_warehouse\".fct_order_items WHERE purchased_at >= '2018-01-01' AND purchased_at < '2018-04-01';",
+      "answer": "**Total freight value of all order items purchased in Q1\u202f2018 (January\u202f\u2013\u202fMarch)**  \n\n| Period | Total Freight Value |\n|--------|---------------------|\n| 2018\u201101\u201101\u00a0to\u00a02018\u201103\u201131 | **$471,915.16** |\n\n*This figure comes from summing the `freight_value` column in the cleaned fact table `fct_order_items` for all records whose `purchased_at` timestamp falls within the first quarter of 2018.*"
+    },
+    {
+      "id": "late_orders_2017",
+      "question": "How many orders purchased in 2017 were delivered late?",
+      "correct": false,
+      "llm_calls": 6,
+      "total_tokens": 3929,
+      "seconds": 24.153214582940564,
+      "agent_sql": "SELECT COUNT(*) AS total_orders_2017 FROM \"03_data_warehouse\".fct_orders WHERE EXTRACT(YEAR FROM purchased_at)=2017;",
+      "answer": "**Orders purchased in 2017 that were delivered late**\n\n- **2453** orders were delivered after their estimated delivery date.  \n\n(For reference, there were 45,101 orders purchased in 2017.)"
+    },
+    {
+      "id": "one_time_customers",
+      "question": "How many unique customers (customer_unique_id) placed exactly one order?",
+      "correct": true,
+      "llm_calls": 6,
+      "total_tokens": 3706,
+      "seconds": 19.27132158295717,
+      "agent_sql": "SELECT COUNT(*) AS unique_customers_with_one_order\nFROM (\n  SELECT customer_unique_id\n  FROM \"03_data_warehouse\".fct_orders\n  GROUP BY customer_unique_id\n  HAVING COUNT(*) = 1\n) AS sub;",
+      "answer": "**Answer**\n\nThere are **93,099** unique customers (`customer_unique_id`) who placed exactly one order.\n\n**How we got it**\n\nWe queried the cleaned warehouse fact table `fct_orders` and counted the distinct `customer_unique_id` values that appeared only once:\n\n```sql\nSELECT COUNT(*) AS unique_customers_with_one_order\nFROM (\n  SELECT customer_unique_id\n  FROM \"03_data_warehouse\".fct_orders\n  GROUP BY customer_unique_id\n  HAVING COUNT(*) = 1\n) AS sub;\n```\n\nResult: `93099`."
+    },
+    {
+      "id": "late_share_delivered",
+      "question": "Among orders with status 'delivered' that have a delivery date, what percentage were delivered late? Round to 2 decimals.",
+      "correct": true,
+      "llm_calls": 6,
+      "total_tokens": 3797,
+      "seconds": 25.70830787497107,
+      "agent_sql": "SELECT\n  COUNT(*) FILTER (WHERE delivered_at IS NOT NULL) AS total_delivered_with_date,\n  COUNT(*) FILTER (WHERE delivered_at IS NOT NULL AND is_late_delivery) AS late_delivered,\n  ROUND(100.0 * COUNT(*) FILTER (WHERE delivered_at IS NOT NULL AND is_late_delivery) / NULLIF(COUNT(*) FILTER (WHERE delivered_at IS NOT NULL),0), 2) AS pct_late\nFROM \"03_data_warehouse\".fct_orders\nWHERE order_status = 'delivered';",
+      "answer": "**Percentage of late deliveries**\n\n| Metric | Value |\n|--------|-------|\n| Total delivered orders with a delivery date | **96,470** |\n| Late deliveries (delivered after the estimated date) | **6,534** |\n| **Late\u2011delivery rate** | **6.77\u202f%** |\n\nSo, among orders that were marked *delivered* and have a recorded delivery date, **6.77\u202f%** were delivered late."
+    }
+  ]
+}
