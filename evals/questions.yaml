@@ -1,4 +1,4 @@
-dataset_version: 2
+dataset_version: 3
 cases:
   - id: late_orders
     question: How many orders were delivered late?
@@ -76,3 +76,86 @@ cases:
       SELECT sum(freight_value)
       FROM "03_data_warehouse".fct_order_items
       WHERE purchased_at >= '2017-01-01' AND purchased_at < '2018-01-01'
+
+  - id: delivered_orders
+    question: How many orders have the status 'delivered'?
+    gold_sql: |
+      SELECT count(*)
+      FROM "03_data_warehouse".fct_orders
+      WHERE order_status = 'delivered'
+
+  - id: distinct_products_sold
+    question: How many distinct products appear in the order items?
+    gold_sql: |
+      SELECT count(DISTINCT product_id)
+      FROM "03_data_warehouse".fct_order_items
+
+  - id: max_item_price
+    question: What is the highest price of a single order item (excluding freight)?
+    gold_sql: |
+      SELECT max(price)
+      FROM "03_data_warehouse".fct_order_items
+
+  - id: avg_item_price
+    question: What is the average price of an order item (excluding freight)?
+    gold_sql: |
+      SELECT avg(price)
+      FROM "03_data_warehouse".fct_order_items
+
+  - id: english_categories
+    question: How many distinct English product category names are there in the products table?
+    gold_sql: |
+      SELECT count(DISTINCT product_category_name_english)
+      FROM "03_data_warehouse".dim_products
+
+  - id: top_seller_item_price
+    question: >-
+      Which seller_id has the highest total item price (excluding freight),
+      and what is that total?
+    gold_sql: |
+      SELECT seller_id, sum(price)
+      FROM "03_data_warehouse".fct_order_items
+      GROUP BY seller_id
+      ORDER BY 2 DESC
+      LIMIT 1
+
+  - id: orders_rj
+    question: How many orders were placed by customers in the state RJ?
+    gold_sql: |
+      SELECT count(*)
+      FROM "03_data_warehouse".fct_orders o
+      JOIN "02_stg".stg_customers c USING (customer_id)
+      WHERE c.customer_state = 'RJ'
+
+  - id: freight_2018_q1
+    question: >-
+      What is the total freight value of order items purchased in the first
+      quarter of 2018 (January to March)?
+    gold_sql: |
+      SELECT sum(freight_value)
+      FROM "03_data_warehouse".fct_order_items
+      WHERE purchased_at >= '2018-01-01' AND purchased_at < '2018-04-01'
+
+  - id: late_orders_2017
+    question: How many orders purchased in 2017 were delivered late?
+    gold_sql: |
+      SELECT count(*)
+      FROM "03_data_warehouse".fct_orders
+      WHERE is_late_delivery
+        AND purchased_at >= '2017-01-01' AND purchased_at < '2018-01-01'
+
+  - id: one_time_customers
+    question: How many unique customers (customer_unique_id) placed exactly one order?
+    gold_sql: |
+      SELECT count(*)
+      FROM "03_data_warehouse".dim_customers
+      WHERE order_count = 1
+
+  - id: late_share_delivered
+    question: >-
+      Among orders with status 'delivered' that have a delivery date, what
+      percentage were delivered late? Round to 2 decimals.
+    gold_sql: |
+      SELECT round(100.0 * count(*) FILTER (WHERE is_late_delivery) / count(*), 2)
+      FROM "03_data_warehouse".fct_orders
+      WHERE order_status = 'delivered' AND delivered_at IS NOT NULL
