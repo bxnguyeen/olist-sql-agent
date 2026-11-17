@@ -59,8 +59,13 @@ tests/          unit tests (pytest)
 ## How to run
 
 Requirements: Python 3.11+, a PostgreSQL database with the Olist warehouse
-(schemas `02_stg` and `03_data_warehouse`, built by a separate dbt project),
-and an API key for any OpenAI-compatible LLM endpoint. I used the Groq free tier.
+(schemas `02_stg` and `03_data_warehouse`), and an API key for any OpenAI-compatible
+LLM endpoint. I used the Groq free tier.
+
+The warehouse is built by a separate project,
+[olist-data-platform](https://github.com/bxnguyeen/olist-data-platform): it loads the
+Kaggle CSV files into PostgreSQL and builds the staging and warehouse tables with dbt.
+Follow its README first, then create the read-only role below.
 
 ```bash
 python -m venv .venv
@@ -215,10 +220,12 @@ the setup as a whole, not only the model.
 
 ## Tests and CI
 
-- 23 unit tests. Tests of the agent loop use a fake LLM client with scripted responses,
+- 23 tests; 10 run in CI without a database. Tests of the agent loop use a fake LLM
+  client with scripted responses,
   so they need neither network access nor the database.
 - Tests that need the database are marked `db`. GitHub Actions runs
-  `pytest -m "not db"` on every push, since the Olist database is not available in CI.
+  `ruff check`, `ruff format --check` and `pytest -m "not db"` on every push, since the
+  Olist database is not available in CI.
 
 ## Next steps
 
