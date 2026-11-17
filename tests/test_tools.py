@@ -1,4 +1,6 @@
 from olist_agent.tools import call_tool, describe_table, list_tables
+import pytest
+pytestmark = pytest.mark.db
 
 
 def test_list_tables_includes_fct_orders():

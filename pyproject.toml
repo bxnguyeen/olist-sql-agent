@@ -23,3 +23,6 @@ olist-report = "olist_agent.evaluate:report"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+markers = ["db: needs the Olist PostgreSQL database"]

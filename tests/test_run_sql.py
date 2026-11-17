@@ -1,4 +1,6 @@
 from olist_agent.tools import MAX_ROWS, run_sql
+import pytest
+pytestmark = pytest.mark.db
 
 
 def test_run_sql_returns_header_and_rows():
