@@ -145,7 +145,7 @@ code and prompt that produced them.
 
 ### Results
 
-20-question dataset (`dataset_version: 3`), from `olist-report`:
+20-question dataset (`dataset_version: 3`), one run per row, from `olist-report`:
 
 | Model | Prompt | Accuracy | Avg tokens / question | Avg seconds / question |
 |---|---|---|---|---|
@@ -175,7 +175,7 @@ the setup as a whole, not only the model.
   7,827 instead of the warehouse's definition (6,534, compared by date).
 - **Join fan-out.** Joining customers on `customer_unique_id` duplicates rows because
   that column is not unique in the customer table. A general prompt rule did not stop
-  this; a note on the column in `describe_table` reduced it but did not remove it.
+  this, and a note on the column in `describe_table` did not reliably prevent it either.
 - **Ambiguous column names.** The agent once summed `item_total_amount` for a question
   that excluded freight. Column notes now state what such columns contain.
 - **Arithmetic outside SQL.** In one run the agent queried the correct counts and then
@@ -195,15 +195,14 @@ the setup as a whole, not only the model.
   for context and was marked wrong; prompt v1 once ran the right counts, divided them
   itself and misreported the percentage. Grading the written answer as well, for example
   with an LLM judge, would catch both, at the cost of a less deterministic grader.
-  then misreports it is still counted as correct (the arithmetic case above was caught
-  only because its last query returned counts, not the percentage).
 - Gold queries return only values with one unambiguous representation; questions are
   worded to have one interpretation.
 
 ## Design decisions
 
-- **OpenAI-compatible client.** The `openai` SDK with a configurable `base_url` works with
-  Groq, OpenAI and Ollama, so the provider is a `.env` change.
+- **OpenAI-compatible client.** The `openai` SDK with a configurable `base_url` can talk to
+  any OpenAI-compatible endpoint (Groq, OpenAI, Ollama), so the provider is a `.env`
+  change. Only Groq has been tested.
 - **Tools return text, including errors.** The LLM reads SQL errors and fixes its query
   instead of the program crashing.
 - **Defence in depth for the database.** A `SELECT`-only role, a read-only transaction,
